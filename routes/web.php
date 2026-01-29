@@ -67,3 +67,16 @@ Route::middleware('guest')->group(function () {
     Route::get('/auth/google', [AuthController::class, 'redirectToGoogle'])->name('google.login');
     Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback']);
 });
+
+// TEMPORARY: Run this once on the live site to set up the DB
+Route::get('/deploy-setup', function () {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('migrate:fresh', [
+            '--seed' => true,
+            '--force' => true,
+        ]);
+        return "NOW CONNECTED TO MYSQL: Database tables created and products seeded successfully! Log: " . \Illuminate\Support\Facades\Artisan::output();
+    } catch (\Exception $e) {
+        return "Error: " . $e->getMessage();
+    }
+});
