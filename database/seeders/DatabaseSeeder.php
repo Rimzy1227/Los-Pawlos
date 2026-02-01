@@ -13,9 +13,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             LegacyImportSeeder::class,
-            // CategorySeeder and ProductSeeder are redundant now since LegacyImportSeeder handles them
-            // but we can keep them if we want to ensure basic data even if legacy file is missing
-            // However, LegacyImportSeeder truncates, so it should be called last or instead of them.
+            AdminSeeder::class,
         ]);
     }
 }
