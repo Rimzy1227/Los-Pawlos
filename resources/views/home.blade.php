@@ -83,7 +83,7 @@
       @forelse($featuredProducts as $p)
        <div class="card bg-white p-4 rounded shadow-sm">
         <img src="{{ asset('assets/images/'.strtolower($p->category).'/'.$p->image) }}" class="rounded mb-3 h-36 w-full object-contain">
-        <h3 class="font-semibold text-sm mb-1">{{ $p->name }}</h3>
+        <h3 class="font-semibold text-sm mb-1">{{ $p->name }}</h3><!-- THIS ESCAPES MALICIOUS SCRIPTS automatically -->
         <p class="text-xs text-gray-600">{{ $p->description }}</p>
         <div class="flex justify-between items-center mt-2">
           <span class="font-bold text-sm">${{ number_format($p->price, 2) }}</span>

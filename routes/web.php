@@ -37,7 +37,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
     
     // Admin Products
@@ -68,37 +68,15 @@ Route::middleware('guest')->group(function () {
     Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback']);
 });
 
-// DEBUG: Check what the server sees for DB config
-Route::get('/deploy-debug', function () {
-    return [
-        'DB_CONNECTION' => config('database.default'),
-        'MYSQL_HOST' => config('database.connections.mysql.host'),
-        'MYSQL_DATABASE' => config('database.connections.mysql.database'),
-        'MYSQL_URL_PRESENT' => !empty(config('database.connections.mysql.url')),
-        'ENV_DATABASE_URL' => substr(env('DATABASE_URL'), 0, 15) . '...', 
-    ];
-});
-
 // TEMPORARY: Run this once on the live site to set up the DB
 Route::get('/deploy-setup', function () {
     try {
-        $host = config('database.connections.mysql.host');
-        $db = config('database.connections.mysql.database');
         $url = config('database.connections.mysql.url');
+        if (!$url) { return "ERROR: DATABASE_URL is missing in Railway Variables."; }
         
-        if (!$url && (!$host || !$db)) {
-            return "ERROR: Database connection info is missing. <br> URL: " . ($url ? 'PRESENT' : 'MISSING') . " <br> Host: " . ($host ?: 'MISSING') . " <br> DB: " . ($db ?: 'MISSING') . "<br> Please check your Railway Variables for DATABASE_URL or DB_HOST.";
-        }
-
-        \Illuminate\Support\Facades\Log::info("Starting live migration for host: $host");
-
-        \Illuminate\Support\Facades\Artisan::call('migrate:fresh', [
-            '--seed' => true,
-            '--force' => true,
-        ]);
-        
-        return "NOW CONNECTED TO MYSQL: Database tables created and products seeded successfully! <br><br> Log: " . \Illuminate\Support\Facades\Artisan::output();
+        \Illuminate\Support\Facades\Artisan::call('migrate:fresh', ['--seed' => true, '--force' => true]);
+        return "NOW CONNECTED TO MYSQL: Database tables created successfully! <br><br> Log: " . \Illuminate\Support\Facades\Artisan::output();
     } catch (\Exception $e) {
-        return "CRITICAL ERROR: " . $e->getMessage() . "<br><br> File: " . $e->getFile() . " Line: " . $e->getLine();
+        return "CRITICAL ERROR: " . $e->getMessage();
     }
 });
