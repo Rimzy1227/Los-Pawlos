@@ -43,7 +43,7 @@
     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-8">
       
       <a href="{{ route('products.index', ['category' => 'Food']) }}" class="bg-white rounded-lg shadow hover:shadow-lg transition duration-300 p-4 flex flex-col items-center text-center">
-        <img src="{{ asset('assets/images/food/Large-Breed-Dog-Food-10kg.jpg') }}" alt="Food" class="h-32 w-full object-contain rounded-md mb-4">
+        <img src="{{ asset('assets/images/food/large-breed-dog-food-10kg.jpg') }}" alt="Food" class="h-32 w-full object-contain rounded-md mb-4">
         <h3 class="text-lg font-semibold text-gray-700">Food</h3>
       </a>
 
@@ -82,19 +82,23 @@
       
       @forelse($featuredProducts as $p)
        <div class="card bg-white p-4 rounded shadow-sm">
-        <img src="{{ asset('assets/images/'.strtolower($p->category).'/'.$p->image) }}" class="rounded mb-3 h-36 w-full object-contain">
+        <img src="{{ asset('assets/images/'.strtolower($p->category).'/'.strtolower($p->image)) }}" 
+             onerror="this.onerror=null;this.src='{{ asset('assets/images/placeholder.jpg') }}';"
+             class="rounded mb-3 h-36 w-full object-contain">
         <h3 class="font-semibold text-sm mb-1">{{ $p->name }}</h3><!-- THIS ESCAPES MALICIOUS SCRIPTS automatically -->
         <p class="text-xs text-gray-600">{{ $p->description }}</p>
         <div class="flex justify-between items-center mt-2">
           <span class="font-bold text-sm">${{ number_format($p->price, 2) }}</span>
-          <a href="{{ route('cart.add') }}" 
-             onclick="event.preventDefault(); document.getElementById('add-form-{{$p->id}}').submit();" 
-             class="btn-brand text-xs px-3 py-1 cursor-pointer">View (Add)</a>
-             
-           <form id="add-form-{{$p->id}}" action="{{ route('cart.add') }}" method="POST" class="hidden">
-               @csrf
-               <input type="hidden" name="product_id" value="{{ $p->id }}">
-           </form>
+          <div class="flex gap-2">
+            <a href="{{ route('products.show', $p->id) }}" 
+               class="text-blue-600 hover:underline text-xs">View</a>
+            
+            <form action="{{ route('cart.add') }}" method="POST">
+                @csrf
+                <input type="hidden" name="product_id" value="{{ $p->id }}">
+                <button type="submit" class="btn-brand text-[10px] px-2 py-0.5">Add to Cart</button>
+            </form>
+          </div>
         </div>
       </div>
       @empty
