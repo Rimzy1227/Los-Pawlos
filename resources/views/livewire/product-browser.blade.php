@@ -49,7 +49,6 @@
                 <div class="bg-white border border-gray-200 rounded-lg shadow hover:shadow-md transition duration-300 flex flex-col h-full">
                     <img
                         src="{{ asset('assets/images/'.strtolower($p->category).'/'.strtolower($p->image)) }}"
-                        onerror="this.onerror=null;this.src='{{ asset('assets/images/placeholder.jpg') }}';"
                         alt="{{ $p->name }}"
                         class="w-full h-48 object-contain rounded-t bg-gray-100"
                     />

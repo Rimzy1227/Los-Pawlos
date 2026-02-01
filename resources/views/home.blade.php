@@ -81,29 +81,20 @@
            The new controller implementation passes $featuredProducts. -->
       
       @forelse($featuredProducts as $p)
-       <div class="card bg-white p-4 rounded shadow-sm">
+       <div class="card bg-white p-4 rounded shadow-sm flex flex-col items-center">
         <img src="{{ asset('assets/images/'.strtolower($p->category).'/'.strtolower($p->image)) }}" 
-             onerror="this.onerror=null;this.src='{{ asset('assets/images/placeholder.jpg') }}';"
+             alt="{{ $p->name }}"
              class="rounded mb-3 h-36 w-full object-contain">
-        <h3 class="font-semibold text-sm mb-1">{{ $p->name }}</h3><!-- THIS ESCAPES MALICIOUS SCRIPTS automatically -->
-        <p class="text-xs text-gray-600">{{ $p->description }}</p>
-        <div class="flex justify-between items-center mt-2">
-          <span class="font-bold text-sm">${{ number_format($p->price, 2) }}</span>
-          <div class="flex gap-2">
-            <a href="{{ route('products.show', $p->id) }}" 
-               class="text-blue-600 hover:underline text-xs">View</a>
-            
-            <form action="{{ route('cart.add') }}" method="POST">
-                @csrf
-                <input type="hidden" name="product_id" value="{{ $p->id }}">
-                <button type="submit" class="btn-brand text-[10px] px-2 py-0.5">Add to Cart</button>
-            </form>
-          </div>
+        <h3 class="font-semibold text-sm mb-1 text-center">{{ $p->name }}</h3>
+        <p class="text-xs text-gray-600 text-center mb-3">{{ Str::limit($p->description, 60) }}</p>
+        <div class="mt-auto w-full flex flex-col items-center">
+          <span class="font-bold text-base text-green-600 mb-2">${{ number_format($p->price, 2) }}</span>
+          <a href="{{ route('products.show', $p->id) }}" 
+             class="btn-brand w-full text-center text-xs py-2">View Details</a>
         </div>
       </div>
       @empty
-         <!-- Fallback to hardcoded if DB empty -->
-         <p>No featured products.</p>
+         <p class=\"text-center col-span-3\">No featured products available.</p>
       @endforelse
 
     </div>
@@ -128,22 +119,6 @@
   <a href="{{ route('register') }}" class="btn-brand ml-3">Create Account</a>
 </section>
 
-<section class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 p-4 max-w-6xl mx-auto">
-  @foreach($featuredProducts->take(6) as $p)
-    <div class="bg-white p-3 rounded-md shadow hover:shadow-md transition">
-      <h3 class="font-semibold">{{ $p->name }}</h3>
-      <p class="text-sm text-gray-600">{{ $p->category }}</p>
-      <p class="mt-2 font-bold">${{ number_format($p->price, 2) }}</p>
-      <div class="mt-4 flex justify-between">
-        <a class="text-blue-600" href="{{ route('products.show', $p->id) }}">View</a>
-        <form method="post" action="{{ route('cart.add') }}">
-          @csrf
-          <input type="hidden" name="product_id" value="{{ $p->id }}">
-          <button class="bg-green-500 text-white px-3 py-1 rounded">Add to cart</button>
-        </form>
-      </div>
-    </div>
-  @endforeach
-</section>
+
 
 @endsection

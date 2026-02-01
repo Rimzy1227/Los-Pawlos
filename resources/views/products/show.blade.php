@@ -20,7 +20,6 @@
 
     <div>
       <img src="{{ asset('assets/images/'.strtolower($product->category).'/'.strtolower($product->image)) }}" 
-           onerror="this.onerror=null;this.src='{{ asset('assets/images/placeholder.jpg') }}';"
            alt="{{ $product->name }}" class="w-full h-auto rounded-lg shadow" />
     </div>
 
@@ -78,7 +77,6 @@
     <div class="border rounded-lg p-4 shadow hover:shadow-lg transition">
         <img 
             src="{{ asset('assets/images/'.strtolower($related->category).'/'.strtolower($related->image)) }}" 
-            onerror="this.onerror=null;this.src='{{ asset('assets/images/placeholder.jpg') }}';"
             alt="{{ $related->name }}" 
             class="w-full h-32 object-contain rounded mb-2" 
         />
