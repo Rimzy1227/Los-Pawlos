@@ -1,0 +1,11 @@
+[phases.setup]
+nixpkgsArchive = "8ad5fbefe9e577033af0ac3b6afda03260714ec0"
+
+[phases.install]
+cmds = ["composer install --no-interaction --prefer-dist", "npm install"]
+
+[phases.build]
+cmds = ["npm run build"]
+
+[start]
+cmd = "php artisan serve --host=0.0.0.0 --port=$PORT"
