@@ -68,6 +68,17 @@ Route::middleware('guest')->group(function () {
     Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback']);
 });
 
+Route::get('/debug-user', function () {
+    if (!auth()->check()) {
+        return "Not logged in";
+    }
+    return [
+        'name' => auth()->user()->name,
+        'email' => auth()->user()->email,
+        'role' => auth()->user()->role,
+    ];
+});
+
 // TEMPORARY: Run this once on the live site to set up the DB
 Route::get('/deploy-setup', function () {
     try {
