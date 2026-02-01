@@ -71,12 +71,19 @@ Route::middleware('guest')->group(function () {
 // TEMPORARY: Run this once on the live site to set up the DB
 Route::get('/deploy-setup', function () {
     try {
+        // Check if database variables are present
+        if (!config('database.connections.mysql.host')) {
+            return "ERROR: Database host not found in environment variables. Please link MySQL in Railway first!";
+        }
+
         \Illuminate\Support\Facades\Artisan::call('migrate:fresh', [
             '--seed' => true,
             '--force' => true,
         ]);
-        return "NOW CONNECTED TO MYSQL: Database tables created and products seeded successfully! Log: " . \Illuminate\Support\Facades\Artisan::output();
+        
+        return "NOW CONNECTED TO MYSQL: Database tables created and products seeded successfully! <br><br> Log: " . \Illuminate\Support\Facades\Artisan::output();
     } catch (\Exception $e) {
-        return "Error: " . $e->getMessage();
+        \Illuminate\Support\Facades\Log::error("Deployment Setup Failed: " . $e->getMessage());
+        return "Error: " . $e->getMessage() . "<br><br> Check your Railway Variables!";
     }
 });
