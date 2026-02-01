@@ -73,9 +73,10 @@ Route::get('/deploy-setup', function () {
     try {
         $host = config('database.connections.mysql.host');
         $db = config('database.connections.mysql.database');
+        $url = config('database.connections.mysql.url');
         
-        if (!$host || !$db) {
-            return "ERROR: Database variables are partially missing. <br> Host: " . ($host ?: 'MISSING') . " <br> DB: " . ($db ?: 'MISSING');
+        if (!$url && (!$host || !$db)) {
+            return "ERROR: Database connection info is missing. <br> URL: " . ($url ? 'PRESENT' : 'MISSING') . " <br> Host: " . ($host ?: 'MISSING') . " <br> DB: " . ($db ?: 'MISSING') . "<br> Please check your Railway Variables for DATABASE_URL or DB_HOST.";
         }
 
         \Illuminate\Support\Facades\Log::info("Starting live migration for host: $host");
