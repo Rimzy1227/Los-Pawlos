@@ -71,10 +71,14 @@ Route::middleware('guest')->group(function () {
 // TEMPORARY: Run this once on the live site to set up the DB
 Route::get('/deploy-setup', function () {
     try {
-        // Check if database variables are present
-        if (!config('database.connections.mysql.host')) {
-            return "ERROR: Database host not found in environment variables. Please link MySQL in Railway first!";
+        $host = config('database.connections.mysql.host');
+        $db = config('database.connections.mysql.database');
+        
+        if (!$host || !$db) {
+            return "ERROR: Database variables are partially missing. <br> Host: " . ($host ?: 'MISSING') . " <br> DB: " . ($db ?: 'MISSING');
         }
+
+        \Illuminate\Support\Facades\Log::info("Starting live migration for host: $host");
 
         \Illuminate\Support\Facades\Artisan::call('migrate:fresh', [
             '--seed' => true,
@@ -83,7 +87,6 @@ Route::get('/deploy-setup', function () {
         
         return "NOW CONNECTED TO MYSQL: Database tables created and products seeded successfully! <br><br> Log: " . \Illuminate\Support\Facades\Artisan::output();
     } catch (\Exception $e) {
-        \Illuminate\Support\Facades\Log::error("Deployment Setup Failed: " . $e->getMessage());
-        return "Error: " . $e->getMessage() . "<br><br> Check your Railway Variables!";
+        return "CRITICAL ERROR: " . $e->getMessage() . "<br><br> File: " . $e->getFile() . " Line: " . $e->getLine();
     }
 });
