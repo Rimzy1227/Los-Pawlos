@@ -75,7 +75,7 @@ Route::get('/deploy-debug', function () {
         'MYSQL_HOST' => config('database.connections.mysql.host'),
         'MYSQL_DATABASE' => config('database.connections.mysql.database'),
         'MYSQL_URL_PRESENT' => !empty(config('database.connections.mysql.url')),
-        'ENV_DATABASE_URL_PRESENT' => !empty(env('DATABASE_URL')),
+        'ENV_DATABASE_URL' => substr(env('DATABASE_URL'), 0, 15) . '...', 
     ];
 });
 
