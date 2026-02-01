@@ -68,6 +68,17 @@ Route::middleware('guest')->group(function () {
     Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback']);
 });
 
+// DEBUG: Check what the server sees for DB config
+Route::get('/deploy-debug', function () {
+    return [
+        'DB_CONNECTION' => config('database.default'),
+        'MYSQL_HOST' => config('database.connections.mysql.host'),
+        'MYSQL_DATABASE' => config('database.connections.mysql.database'),
+        'MYSQL_URL_PRESENT' => !empty(config('database.connections.mysql.url')),
+        'ENV_DATABASE_URL_PRESENT' => !empty(env('DATABASE_URL')),
+    ];
+});
+
 // TEMPORARY: Run this once on the live site to set up the DB
 Route::get('/deploy-setup', function () {
     try {
