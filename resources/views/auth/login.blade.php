@@ -38,33 +38,53 @@
     <form method="post" action="{{ route('login') }}" id="loginForm">
       @csrf
       <input type="hidden" name="is_incognito" id="isIncognito" value="false">
-      <div id="incognitoBadge" class="hidden text-xs font-bold text-red-600 mb-2">🔒 PRIVATE MODE DETECTED</div>
+      
+      <!-- Visual Security Status for Assignment Proof -->
+      <div id="securityShield" class="mb-4 p-2 rounded text-center text-xs font-bold border flex items-center justify-center gap-2">
+          <span id="shieldIcon">🛡️</span> <span id="shieldText">Scanning Browser Safety...</span>
+      </div>
       
       <script>
-        (function() {
-            const detector = function() {
-                const fs = window.RequestFileSystem || window.webkitRequestFileSystem;
-                if (!fs) {
-                    console.log("Blocking: No FS API"); // Safari might land here
-                    setIncognito(true);
-                    return;
-                }
-                fs(window.TEMPORARY, 100, 
-                    () => setIncognito(false), 
-                    () => setIncognito(true)
-                );
-            };
+        (async function() {
+            const loginBtn = document.querySelector('button[type="submit"]');
+            const shield = document.getElementById('securityShield');
+            const shieldText = document.getElementById('shieldText');
+            const hiddenInput = document.getElementById('isIncognito');
 
-            function setIncognito(isTrue) {
-                document.getElementById('isIncognito').value = isTrue ? 'true' : 'false';
-                if (isTrue) {
-                    document.getElementById('incognitoBadge').classList.remove('hidden');
+            async function detectIncognito() {
+                // 1. Check Disk Quota (Chrome/Edge/Opera)
+                if ('storage' in navigator && 'estimate' in navigator.storage) {
+                    const { quota } = await navigator.storage.estimate();
+                    if (quota < 120000000) return true;
                 }
+                // 2. Check FileSystem API (Legacy Chrome)
+                const fs = window.RequestFileSystem || window.webkitRequestFileSystem;
+                if (fs) {
+                    let isPrivate = await new Promise(resolve => {
+                        fs(window.TEMPORARY, 100, () => resolve(false), () => resolve(true));
+                    });
+                    if (isPrivate) return true;
+                }
+                // 3. Check IndexedDB (Firefox/Safari)
+                try {
+                    if (!window.indexedDB) return true;
+                } catch (e) { return true; }
+
+                return false;
             }
+
+            const isIncognito = await detectIncognito();
             
-            // Run immediately and after a short delay to ensure quota is calculated
-            detector();
-            setTimeout(detector, 500);
+            if (isIncognito) {
+                hiddenInput.value = 'true';
+                shield.classList.add('bg-red-100', 'border-red-400', 'text-red-700');
+                shieldText.innerText = "SECURITY ALERT: PRIVATE MODE DETECTED";
+                document.getElementById('shieldIcon').innerText = "🚫";
+            } else {
+                shield.classList.add('bg-green-100', 'border-green-400', 'text-green-700');
+                shieldText.innerText = "BROWSER SECURE: Standard Mode Access Granted";
+                document.getElementById('shieldIcon').innerText = "✅";
+            }
         })();
       </script>
       <div class="mb-4">
