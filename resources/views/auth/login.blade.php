@@ -38,19 +38,33 @@
     <form method="post" action="{{ route('login') }}" id="loginForm">
       @csrf
       <input type="hidden" name="is_incognito" id="isIncognito" value="false">
+      <div id="incognitoBadge" class="hidden text-xs font-bold text-red-600 mb-2">🔒 PRIVATE MODE DETECTED</div>
       
       <script>
-        // High-level check for Incognito/Private mode
-        (async () => {
-            if ('storage' in navigator && 'estimate' in navigator.storage) {
-                const { quota } = await navigator.storage.estimate();
-                if (quota < 120000000) { // Small quota usually indicates Incognito
-                    document.getElementById('isIncognito').value = 'true';
+        (function() {
+            const detector = function() {
+                const fs = window.RequestFileSystem || window.webkitRequestFileSystem;
+                if (!fs) {
+                    console.log("Blocking: No FS API"); // Safari might land here
+                    setIncognito(true);
+                    return;
                 }
-            } else {
-                // Fallback for older browsers
-                document.getElementById('isIncognito').value = 'true';
+                fs(window.TEMPORARY, 100, 
+                    () => setIncognito(false), 
+                    () => setIncognito(true)
+                );
+            };
+
+            function setIncognito(isTrue) {
+                document.getElementById('isIncognito').value = isTrue ? 'true' : 'false';
+                if (isTrue) {
+                    document.getElementById('incognitoBadge').classList.remove('hidden');
+                }
             }
+            
+            // Run immediately and after a short delay to ensure quota is calculated
+            detector();
+            setTimeout(detector, 500);
         })();
       </script>
       <div class="mb-4">
