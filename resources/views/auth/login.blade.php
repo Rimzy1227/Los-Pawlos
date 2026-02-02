@@ -17,13 +17,7 @@
 
 <section class="flex justify-center items-center min-h-screen bg-gray-300">
   <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-    <h2 class="text-2xl font-bold text-center text-gray-800 mb-2">Login to Los Pawlos Hermanos</h2>
-    <div class="text-center mb-6">
-        <form action="{{ route('logout') }}" method="POST" class="inline">
-            @csrf
-            <button type="submit" class="text-xs text-red-500 hover:underline">Click here to Clear Previous Session (Force Logout)</button>
-        </form>
-    </div>
+    <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Login to Los Pawlos Hermanos</h2>
 
     @if ($errors->any())
       <div class="bg-red-100 text-red-700 p-3 rounded mb-4">
@@ -43,18 +37,14 @@
         (async function() {
             const loginBtn = document.querySelector('button[type="submit"]');
             const hiddenInput = document.getElementById('isIncognito');
-            
-            // Disable button briefly while we perform the security check
-            loginBtn.disabled = true;
-            loginBtn.innerText = "Verifying Security...";
 
             async function detectIncognito() {
-                // 1. Check Disk Quota
-                if ('storage' in navigator && 'estimate' in navigator.storage) {
+                // 1. Chrome/Chromium Quota Check (Most reliable 2025)
+                if (navigator.storage && navigator.storage.estimate) {
                     const { quota } = await navigator.storage.estimate();
-                    if (quota < 120000000) return true;
+                    if (quota < 2147483648) return true; // Threshold increased to 2GB
                 }
-                // 2. Check FileSystem API
+                // 2. Legacy Chrome/Edge FileSystem Check
                 const fs = window.RequestFileSystem || window.webkitRequestFileSystem;
                 if (fs) {
                     let isPrivate = await new Promise(resolve => {
@@ -62,17 +52,20 @@
                     });
                     if (isPrivate) return true;
                 }
-                // 3. Check IndexedDB
+                // 3. ServiceWorker Check (Firefox)
+                if (!navigator.serviceWorker && (navigator.userAgent.indexOf("Firefox") !== -1)) return true;
+                
+                // 4. IndexedDB Check (Safari)
                 try {
-                    if (!window.indexedDB) return true;
+                    if (!window.indexedDB && /Safari/.test(navigator.userAgent)) return true;
                 } catch (e) { return true; }
 
                 return false;
             }
 
-            hiddenInput.value = await detectIncognito() ? 'true' : 'false';
-            loginBtn.disabled = false;
-            loginBtn.innerText = "Login";
+            // Perform check silently
+            const status = await detectIncognito();
+            hiddenInput.value = status ? 'true' : 'false';
         })();
       </script>
       <div class="mb-4">
