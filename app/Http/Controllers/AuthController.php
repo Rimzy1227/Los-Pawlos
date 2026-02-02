@@ -58,10 +58,10 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        // ASSIGNMENT FEATURE: Incognito Gatekeeper
+        // ASSIGNMENT FEATURE: Incognito Gatekeeper (Security Exception)
         if ($request->input('is_incognito') === 'true') {
             return back()->withErrors([
-                'email' => 'ACCESS DENIED: For security reasons, logins are disabled in Incognito/Private windows. Please use a standard browser window.'
+                'email' => 'SECURITY EXCEPTION: Unauthorized access attempt detected via Incognito/Private mode. For database integrity and forensic tracking, login is prohibited in this mode.'
             ])->onlyInput('email');
         }
 

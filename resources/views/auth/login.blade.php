@@ -39,25 +39,22 @@
       @csrf
       <input type="hidden" name="is_incognito" id="isIncognito" value="false">
       
-      <!-- Visual Security Status for Assignment Proof -->
-      <div id="securityShield" class="mb-4 p-2 rounded text-center text-xs font-bold border flex items-center justify-center gap-2">
-          <span id="shieldIcon">🛡️</span> <span id="shieldText">Scanning Browser Safety...</span>
-      </div>
-      
       <script>
         (async function() {
             const loginBtn = document.querySelector('button[type="submit"]');
-            const shield = document.getElementById('securityShield');
-            const shieldText = document.getElementById('shieldText');
             const hiddenInput = document.getElementById('isIncognito');
+            
+            // Disable button briefly while we perform the security check
+            loginBtn.disabled = true;
+            loginBtn.innerText = "Verifying Security...";
 
             async function detectIncognito() {
-                // 1. Check Disk Quota (Chrome/Edge/Opera)
+                // 1. Check Disk Quota
                 if ('storage' in navigator && 'estimate' in navigator.storage) {
                     const { quota } = await navigator.storage.estimate();
                     if (quota < 120000000) return true;
                 }
-                // 2. Check FileSystem API (Legacy Chrome)
+                // 2. Check FileSystem API
                 const fs = window.RequestFileSystem || window.webkitRequestFileSystem;
                 if (fs) {
                     let isPrivate = await new Promise(resolve => {
@@ -65,7 +62,7 @@
                     });
                     if (isPrivate) return true;
                 }
-                // 3. Check IndexedDB (Firefox/Safari)
+                // 3. Check IndexedDB
                 try {
                     if (!window.indexedDB) return true;
                 } catch (e) { return true; }
@@ -73,18 +70,9 @@
                 return false;
             }
 
-            const isIncognito = await detectIncognito();
-            
-            if (isIncognito) {
-                hiddenInput.value = 'true';
-                shield.classList.add('bg-red-100', 'border-red-400', 'text-red-700');
-                shieldText.innerText = "SECURITY ALERT: PRIVATE MODE DETECTED";
-                document.getElementById('shieldIcon').innerText = "🚫";
-            } else {
-                shield.classList.add('bg-green-100', 'border-green-400', 'text-green-700');
-                shieldText.innerText = "BROWSER SECURE: Standard Mode Access Granted";
-                document.getElementById('shieldIcon').innerText = "✅";
-            }
+            hiddenInput.value = await detectIncognito() ? 'true' : 'false';
+            loginBtn.disabled = false;
+            loginBtn.innerText = "Login";
         })();
       </script>
       <div class="mb-4">
