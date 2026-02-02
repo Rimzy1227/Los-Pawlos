@@ -34,7 +34,7 @@ class SendOrderConfirmation implements ShouldQueue
         
         Log::info("--- QUEUE JOB EXECUTING ---");
         Log::info("Simulating Sending Confirmation Email for Order ID: " . $this->order->id);
-        Log::info("Recipient: " . ($this->order->user->email ?? 'Guest'));
+        Log::info("Recipient: " . ($this->order->user?->email ?? 'Guest'));
         Log::info("Total Amount: $" . $this->order->total);
         Log::info("--- EMAIL SENT SUCCESSFULLY ---");
     }

@@ -8,6 +8,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Order extends Model
 {
     use HasFactory;
+    
+    // The database only has created_at, so we disable updated_at specifically
+    const UPDATED_AT = null;
 
     protected $fillable = [
         'user_id',

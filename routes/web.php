@@ -85,7 +85,7 @@ Route::get('/deploy-setup', function () {
         $url = config('database.connections.mysql.url');
         if (!$url) { return "ERROR: DATABASE_URL is missing in Railway Variables."; }
         
-        \Illuminate\Support\Facades\Artisan::call('migrate:fresh', ['--seed' => true, '--force' => true]);
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
         return "NOW CONNECTED TO MYSQL: Database tables created successfully! <br><br> Log: " . \Illuminate\Support\Facades\Artisan::output();
     } catch (\Exception $e) {
         return "CRITICAL ERROR: " . $e->getMessage();

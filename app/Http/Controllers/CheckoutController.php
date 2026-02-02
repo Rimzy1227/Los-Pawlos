@@ -83,20 +83,20 @@ class CheckoutController extends Controller
         $sessionId = $request->get('session_id');
         
         if ($sessionId) {
-            Stripe::setApiKey(config('services.stripe.secret'));
-            $session = Session::retrieve($sessionId);
-            
-            if ($session && $session->payment_status === 'paid') {
-                $cart = session()->get('cart', []);
-                $total = 0;
-                foreach($cart as $item) {
-                    $total += $item['price'] * $item['quantity'];
-                }
+            try {
+                Stripe::setApiKey(config('services.stripe.secret'));
+                $session = Session::retrieve($sessionId);
+                
+                if ($session && $session->payment_status === 'paid') {
+                    $cart = session()->get('cart', []);
+                    $total = 0;
+                    foreach($cart as $item) {
+                        $total += $item['price'] * $item['quantity'];
+                    }
 
-                // SECURITY & DATA INTEGRITY: Using Database Transactions
-                \Illuminate\Support\Facades\DB::beginTransaction();
+                    // SECURITY & DATA INTEGRITY: Using Database Transactions
+                    \Illuminate\Support\Facades\DB::beginTransaction();
 
-                try {
                     $order = Order::create([
                         'user_id' => Auth::id() ?? 1,
                         'total' => $total,
@@ -120,17 +120,17 @@ class CheckoutController extends Controller
 
                     \Illuminate\Support\Facades\DB::commit();
 
-                    // ADVANCED ARCHITECTURE: Using Events to decouple order processing
-                    event(new \App\Events\OrderPlaced($order));
+                    \Illuminate\Support\Facades\Log::info("Order #{$order->id} created successfully. Redirecting to home.");
 
-                } catch (\Exception $e) {
-                    \Illuminate\Support\Facades\DB::rollBack();
-                    \Illuminate\Support\Facades\Log::error("Order creation failed: " . $e->getMessage());
-                    return redirect('/')->with('error', 'Something went wrong processing your order locally.');
+                    session()->forget('cart');
+                    return redirect()->route('home')->with('success', 'Order placed successfully! Thank you for your purchase.');
                 }
-
-                session()->forget('cart');
-                return view('checkout.success');
+            } catch (\Throwable $e) {
+                if (\Illuminate\Support\Facades\DB::transactionLevel() > 0) {
+                    \Illuminate\Support\Facades\DB::rollBack();
+                }
+                \Illuminate\Support\Facades\Log::error("CRITICAL CHECKOUT ERROR: " . $e->getMessage() . " in " . $e->getFile() . ":" . $e->getLine());
+                return redirect()->route('home')->with('error', 'Payment processed but we had an issue saving your order: ' . $e->getMessage());
             }
         }
 

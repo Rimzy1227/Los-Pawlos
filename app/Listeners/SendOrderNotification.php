@@ -17,6 +17,6 @@ class SendOrderNotification
         SendOrderConfirmation::dispatch($event->order);
 
         // EXTRA CREDIT: Adding an admin log entry
-        Log::info("Admin Notification: A new order #{$event->order->id} has been placed for ${$event->order->total}");
+        Log::info("Admin Notification: A new order #{$event->order->id} has been placed for \${$event->order->total}");
     }
 }
