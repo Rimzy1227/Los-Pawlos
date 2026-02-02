@@ -84,7 +84,13 @@ class CheckoutController extends Controller
         
         if ($sessionId) {
             try {
-                Stripe::setApiKey(config('services.stripe.secret'));
+                $stripeSecret = trim(config('services.stripe.secret') ?? '');
+                
+                if (!$stripeSecret || str_contains($stripeSecret, 'xxxx')) {
+                    throw new \Exception("Stripe Secret Key is missing or invalid in your environment settings.");
+                }
+
+                Stripe::setApiKey($stripeSecret);
                 $session = Session::retrieve($sessionId);
                 
                 if ($session && $session->payment_status === 'paid') {
@@ -120,7 +126,7 @@ class CheckoutController extends Controller
 
                     \Illuminate\Support\Facades\DB::commit();
 
-                    \Illuminate\Support\Facades\Log::info("Order #{$order->id} created successfully. Redirecting to home.");
+                    \Illuminate\Support\Facades\Log::info("Order #{$order->id} created successfully for Session: {$sessionId}");
 
                     session()->forget('cart');
                     return redirect()->route('home')->with('success', 'Order placed successfully! Thank you for your purchase.');
@@ -129,8 +135,11 @@ class CheckoutController extends Controller
                 if (\Illuminate\Support\Facades\DB::transactionLevel() > 0) {
                     \Illuminate\Support\Facades\DB::rollBack();
                 }
-                \Illuminate\Support\Facades\Log::error("CRITICAL CHECKOUT ERROR: " . $e->getMessage() . " in " . $e->getFile() . ":" . $e->getLine());
-                return redirect()->route('home')->with('error', 'Payment processed but we had an issue saving your order: ' . $e->getMessage());
+                \Illuminate\Support\Facades\Log::error("CRITICAL CHECKOUT ERROR: " . $e->getMessage());
+                
+                // User-friendly error message
+                $userError = "We processed your payment via Stripe, but couldn't save the order to our database. Please contact support with your Stripe email. (Error: " . $e->getMessage() . ")";
+                return redirect()->route('home')->with('error', $userError);
             }
         }
 

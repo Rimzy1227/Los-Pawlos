@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>API Test</title>
+    <style>
+        body { background: #1e1e1e; color: #d4d4d4; font-family: 'Consolas', monospace; padding: 20px; }
+        .header { margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .method { color: #569cd6; font-weight: bold; }
+        .url { color: #ce9178; }
+        pre { background: #252526; padding: 15px; border-radius: 5px; overflow-x: auto; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        .key { color: #9cdcfe; }
+        .string { color: #ce9178; }
+        .number { color: #b5cea8; }
+        .boolean { color: #569cd6; }
+        .null { color: #569cd6; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <span class="method">GET</span> <span class="url">http://127.0.0.1:8000/api/products</span>
+    </div>
+    <div id="status" style="margin-bottom: 10px; color: #4ec9b0;">Status: 200 OK</div>
+    <pre id="output">Loading API response...</pre>
+
+    <script>
+        async function testApi() {
+            const token = '6|nQO0AU78yOmDDEJoOFvVA2m32X290aXjaP6bO3hEc7610244';
+            try {
+                const response = await fetch('http://127.0.0.1:8000/api/products', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                document.getElementById('output').innerHTML = syntaxHighlight(JSON.stringify(data.slice(0, 3), null, 4));
+            } catch (error) {
+                document.getElementById('output').textContent = 'Error: ' + error.message;
+            }
+        }
+
+        function syntaxHighlight(json) {
+            if (typeof json != 'string') {
+                 json = JSON.stringify(json, undefined, 2);
+            }
+            json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?)/g, function (match) {
+                var cls = 'number';
+                if (/^"/.test(match)) {
+                    if (/:$/.test(match)) {
+                        cls = 'key';
+                    } else {
+                        cls = 'string';
+                    }
+                } else if (/true|false/.test(match)) {
+                    cls = 'boolean';
+                } else if (/null/.test(match)) {
+                    cls = 'null';
+                }
+                return '<span class="' + cls + '">' + match + '</span>';
+            });
+        }
+
+        testApi();
+    </script>
+</body>
+</html>

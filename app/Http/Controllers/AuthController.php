@@ -58,6 +58,27 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
+        // ASSIGNMENT FEATURE: Incognito Gatekeeper
+        if ($request->input('is_incognito') === 'true') {
+            return back()->withErrors([
+                'email' => 'ACCESS DENIED: For security reasons, logins are disabled in Incognito/Private windows. Please use a standard browser window.'
+            ])->onlyInput('email');
+        }
+
+        // ASSIGNMENT FEATURE: Proactive Security Block
+        // We detect common SQL injection patterns before they even reach the database
+        $userInput = $request->input('email') . ' ' . $request->input('password');
+        $patterns = ["' OR", "'OR", "1=1", "1 = 1", "--", "DROP TABLE", "UNION SELECT"];
+        
+        foreach ($patterns as $pattern) {
+            if (stripos($userInput, $pattern) !== false) {
+                \Illuminate\Support\Facades\Log::warning("SQL Injection attempt blocked: " . $userInput);
+                return back()->withErrors([
+                    'email' => 'SECURITY THREAT DETECTED: Malicious characters detected. For your security, this attempt has been logged and blocked.'
+                ])->onlyInput('email');
+            }
+        }
+
         $credentials = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required'],

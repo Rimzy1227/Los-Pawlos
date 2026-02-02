@@ -17,7 +17,13 @@
 
 <section class="flex justify-center items-center min-h-screen bg-gray-300">
   <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-    <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Login to Los Pawlos Hermanos</h2>
+    <h2 class="text-2xl font-bold text-center text-gray-800 mb-2">Login to Los Pawlos Hermanos</h2>
+    <div class="text-center mb-6">
+        <form action="{{ route('logout') }}" method="POST" class="inline">
+            @csrf
+            <button type="submit" class="text-xs text-red-500 hover:underline">Click here to Clear Previous Session (Force Logout)</button>
+        </form>
+    </div>
 
     @if ($errors->any())
       <div class="bg-red-100 text-red-700 p-3 rounded mb-4">
@@ -29,11 +35,27 @@
       </div>
     @endif
 
-    <form method="post" action="{{ route('login') }}">
+    <form method="post" action="{{ route('login') }}" id="loginForm">
       @csrf
+      <input type="hidden" name="is_incognito" id="isIncognito" value="false">
+      
+      <script>
+        // High-level check for Incognito/Private mode
+        (async () => {
+            if ('storage' in navigator && 'estimate' in navigator.storage) {
+                const { quota } = await navigator.storage.estimate();
+                if (quota < 120000000) { // Small quota usually indicates Incognito
+                    document.getElementById('isIncognito').value = 'true';
+                }
+            } else {
+                // Fallback for older browsers
+                document.getElementById('isIncognito').value = 'true';
+            }
+        })();
+      </script>
       <div class="mb-4">
         <label for="email" class="block text-gray-700 mb-1">Email</label>
-        <input type="email" id="email" name="email" value="{{ old('email') }}" required
+        <input type="text" id="email" name="email" value="{{ old('email') }}" required
           class="w-full border px-3 py-2 rounded focus:ring-2 focus:ring-blue-400">
       </div>
       <div class="mb-4">
