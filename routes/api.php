@@ -138,3 +138,18 @@ Route::get('/vuln-sql', function (Request $request) {
     
     return $users;
 });
+
+Route::get('/generate-my-token', function (Request $request) {
+    if (!auth()->check()) {
+        return response()->json(['error' => 'Please login to the website first in another tab.'], 401);
+    }
+    
+    // This is the Sanctum magic:
+    $token = auth()->user()->createToken('AssignmentProofToken')->plainTextToken;
+    
+    return response()->json([
+        'message' => 'SUCCESS! A row has been added to personal_access_tokens table.',
+        'token' => $token,
+        'database_proof' => 'Check your personal_access_tokens table now!'
+    ]);
+});
